@@ -1,0 +1,153 @@
+import tkinter as tk
+from tkinter import messagebox, ttk
+
+def format_number(value):
+    """Format the number with commas according to the Indian numbering system."""
+    if value == "":
+        return "0"
+    num = int(value)
+    return "{:,.0f}".format(num).replace(",", ",")
+
+def calculate_tax():
+    try:
+        # Get the inputs from the user
+        annual_income = float(annual_income_entry.get().replace(",", ""))
+        age = int(age_entry.get())
+
+        # Tax calculation logic (2024 Indian Tax Slabs)
+        if annual_income <= 250000:
+            tax_liability = 0
+        elif annual_income <= 500000:
+            tax_liability = (annual_income - 250000) * 0.05
+        elif annual_income <= 1000000:
+            tax_liability = (annual_income - 500000) * 0.1 + 12500
+        elif annual_income <= 1500000:
+            tax_liability = (annual_income - 1000000) * 0.15 + 62500
+        else:
+            tax_liability = (annual_income - 1500000) * 0.3 + 187500
+
+        # Calculate remaining details
+        net_income_after_tax = annual_income - tax_liability
+        predicted_savings = calculate_predicted_savings(tax_liability)
+        net_income_after_savings = net_income_after_tax + predicted_savings
+
+        # Display detailed tax information
+        result_message = (
+            f"Income: ₹{annual_income:,.2f}\n"
+            f"Tax Liability: ₹{tax_liability:,.2f}\n"
+            f"Net Income Remaining for Full Tax: ₹{net_income_after_tax:,.2f}\n"
+            f"Remaining Tax Saved: ₹{predicted_savings:,.2f}\n"
+            f"Net Income Remaining after Tax Savings: ₹{net_income_after_savings:,.2f}"
+        )
+        messagebox.showinfo("Tax Calculation Details", result_message)
+
+        # Ask for tax-saving tips
+        if messagebox.askyesno("Tax Saving Tips", "Would you like to know how your taxes were minimized?"):
+            tax_saving_tips = get_tax_saving_tips(tax_liability)
+            messagebox.showinfo("Tax Saving Tips", tax_saving_tips)
+
+    except ValueError:
+        messagebox.showerror("Input Error", "Please enter valid numbers.")
+
+def calculate_predicted_savings(tax_liability):
+    """Predict savings based on tax liability."""
+    if tax_liability > 0:
+        return tax_liability * 0.3  # Predicting 30% savings potential
+    return 0
+
+def get_tax_saving_tips(tax_liability):
+    """Provide customized tax-saving tips based on tax liability."""
+    if tax_liability > 0:
+        return (
+            "1. Invest in Section 80C (up to ₹1.5 lakhs).\n"
+            "2. Consider National Pension Scheme (NPS) for additional tax deductions.\n"
+            "3. Explore tax benefits on home loan interest under Section 24.\n"
+            "4. Contribute to health insurance for tax benefits under Section 80D.\n"
+            "5. Make use of standard deduction of ₹50,000 for salaried individuals."
+        )
+    else:
+        return "No tax liability; no deductions needed!"
+
+def calculate_loan():
+    try:
+        # Get the inputs from the user
+        loan_amount = float(loan_amount_entry.get().replace(",", ""))
+        annual_interest_rate = float(interest_rate_entry.get())
+        loan_term_years = int(loan_term_entry.get())
+
+        # Calculate monthly interest rate and number of payments
+        monthly_interest_rate = annual_interest_rate / 100 / 12
+        number_of_payments = loan_term_years * 12
+
+        # Calculate monthly payment using the formula
+        monthly_payment = (
+            loan_amount * monthly_interest_rate /
+            (1 - (1 + monthly_interest_rate) ** -number_of_payments)
+        )
+
+        # Format the result in Rupees and display it
+        messagebox.showinfo("Monthly Payment", f"Your monthly payment is: ₹{monthly_payment:,.2f}")
+
+    except ValueError:
+        messagebox.showerror("Input Error", "Please enter valid numbers.")
+
+def open_tax_calculator():
+    loan_calculator_frame.pack_forget()
+    tax_calculator_frame.pack(fill=tk.BOTH, expand=True)
+
+def open_loan_calculator():
+    tax_calculator_frame.pack_forget()
+    loan_calculator_frame.pack(fill=tk.BOTH, expand=True)
+
+# Create the main window
+root = tk.Tk()
+root.title("Financial Calculator")
+root.geometry("800x600")  # Increased window size for better UI
+root.configure(bg="#2a2a2a")  # Dark background
+
+# Styling for colorful theme
+style = ttk.Style()
+style.configure("TButton", font=("Arial", 12), padding=10, background="#4caf50", foreground="white")
+style.map("TButton", background=[('active', '#66bb6a')])  # Button hover color
+style.configure("TLabel", font=("Arial", 14), padding=10, background="#2a2a2a", foreground="white")
+style.configure("TEntry", font=("Arial", 14), padding=10, foreground="black")
+
+# Create frames for tax and loan calculators
+tax_calculator_frame = tk.Frame(root, bg="#2a2a2a")
+loan_calculator_frame = tk.Frame(root, bg="#2a2a2a")
+
+# Tax Calculator Widgets
+tk.Label(tax_calculator_frame, text="Annual Income (₹):").grid(row=0, column=0, padx=10, pady=10)
+annual_income_entry = tk.Entry(tax_calculator_frame, font=("Arial", 14), bg="#ffffff", fg="black", insertbackground='black')
+annual_income_entry.grid(row=0, column=1, padx=10, pady=10)
+
+tk.Label(tax_calculator_frame, text="Age:").grid(row=1, column=0, padx=10, pady=10)
+age_entry = tk.Entry(tax_calculator_frame, font=("Arial", 14), bg="#ffffff", fg="black", insertbackground='black')
+age_entry.grid(row=1, column=1, padx=10, pady=10)
+
+tk.Button(tax_calculator_frame, text="Calculate Tax", command=calculate_tax).grid(row=2, column=0, columnspan=2, pady=20)
+
+# Loan Calculator Widgets
+tk.Label(loan_calculator_frame, text="Loan Amount (₹):").grid(row=0, column=0, padx=10, pady=10)
+loan_amount_entry = tk.Entry(loan_calculator_frame, font=("Arial", 14), bg="#ffffff", fg="black", insertbackground='black')
+loan_amount_entry.grid(row=0, column=1, padx=10, pady=10)
+
+tk.Label(loan_calculator_frame, text="Annual Interest Rate (%):").grid(row=1, column=0, padx=10, pady=10)
+interest_rate_entry = tk.Entry(loan_calculator_frame, font=("Arial", 14), bg="#ffffff", fg="black", insertbackground='black')
+interest_rate_entry.grid(row=1, column=1, padx=10, pady=10)
+
+tk.Label(loan_calculator_frame, text="Loan Term (Years):").grid(row=2, column=0, padx=10, pady=10)
+loan_term_entry = tk.Entry(loan_calculator_frame, font=("Arial", 14), bg="#ffffff", fg="black", insertbackground='black')
+loan_term_entry.grid(row=2, column=1, padx=10, pady=10)
+
+tk.Button(loan_calculator_frame, text="Calculate Loan", command=calculate_loan).grid(row=3, column=0, columnspan=2, pady=20)
+
+# Create main buttons to switch between calculators
+tk.Button(root, text="Open Tax Calculator", command=open_tax_calculator, bg="#2196f3", fg="white").pack(pady=10)
+tk.Button(root, text="Open Loan Calculator", command=open_loan_calculator, bg="#2196f3", fg="white").pack(pady=10)
+
+# Start with tax calculator visible
+open_tax_calculator()
+
+# Run the application
+root.mainloop()
